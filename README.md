@@ -75,7 +75,20 @@ and expanded into a morph table.
 position highlighted, oscilloscope, and log-frequency spectrum analyzer.
 
 **Presets** — JSON patches (parameters + matrix + LFO shapes + FX order).
-Factory patches included; save to localStorage, or export/import files.
+Save to localStorage, or export/import files. 59 factory patches ship in
+`src/ui/presets.ts`, grouped by category:
+
+| Category | Count | Examples |
+|---|---|---|
+| Bass | 12 | Deep Saw Bass, Reese Bass, Acid Squelch, Neuro Growl, Fold Bass, Mid Bass Formant |
+| Leads | 10 | Super Saw Lead, Sync Screamer, Chip Lead, Fuzz Mono, Jet Lead, Glass Whistle |
+| Pads | 11 | Morphing Pad, Shimmer Pad, Dark Matter, Phase Cathedral, Granite Drone, Velvet Strings |
+| Keys | 9 | PWM Keys, Lo-Fi EP, Drawbar Organ, Phased Rhodes, Toy Piano, Hollow Organ |
+| Plucks | 9 | Sync Pluck, Kalimba, Arp Nights, Koto Pluck, Marimba Wood, Comb Harp |
+| FX / other | 7 | Tension Riser, Ocean Drift, Laser Zap, Robot Talk, Downlifter, Vinyl Haze |
+
+Plus an empty Init patch. Many factory patches map Macro 1–2 and the mod
+wheel to their most useful controls.
 
 ## Repository layout
 
