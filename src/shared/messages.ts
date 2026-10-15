@@ -30,6 +30,8 @@ export function modSourceIndex(id: string): number {
 }
 
 export const MAX_MOD_SLOTS = 32
+/** Cap on points per drawn LFO shape (evaluated per sample in the worklet). */
+export const MAX_LFO_POINTS = 64
 export const MAX_VOICES = 16
 export const MAX_UNISON = 16
 
