@@ -4,6 +4,7 @@
 import { paramDef, valueToNorm } from '../shared/params'
 import type { SynthEngine, PresetData } from '../audio/engine'
 import { el } from './common'
+import { readPresetFile, sanitizeName, sanitizePreset } from './preset-io'
 
 const STORAGE_KEY = 'soundgineer.presets.v1'
 
@@ -960,15 +961,33 @@ const FACTORY: Partial<PresetData>[] = [
 ]
 
 function loadUserPresets(): PresetData[] {
+  let raw: unknown
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]') as PresetData[]
+    raw = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]')
   } catch {
     return []
   }
+  if (!Array.isArray(raw)) return []
+  // storage is user-editable: drop anything that doesn't validate
+  const out: PresetData[] = []
+  for (const p of raw) {
+    try {
+      out.push(sanitizePreset(p))
+    } catch {
+      /* skip invalid entry */
+    }
+  }
+  return out
 }
 
-function saveUserPresets(list: PresetData[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
+function saveUserPresets(list: PresetData[]): boolean {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
+    return true
+  } catch (err) {
+    alert(`Could not save preset: ${err}`)
+    return false
+  }
 }
 
 export class PresetBrowser {
@@ -983,12 +1002,12 @@ export class PresetBrowser {
     const save = el('button', 'hdr-btn', 'SAVE')
     save.title = 'Save current patch to the browser'
     save.addEventListener('click', () => {
-      const name = prompt('Preset name?', 'My Patch')
-      if (!name) return
+      const input = prompt('Preset name?', 'My Patch')
+      if (!input) return
+      const name = sanitizeName(input)
       const list = loadUserPresets().filter(p => p.name !== name)
       list.push(this.engine.toPreset(name))
-      saveUserPresets(list)
-      this.refresh(`user:${name}`)
+      if (saveUserPresets(list)) this.refresh(`user:${name}`)
     })
 
     const exportBtn = el('button', 'hdr-btn', 'EXPORT')
@@ -1006,20 +1025,19 @@ export class PresetBrowser {
     const importBtn = el('button', 'hdr-btn', 'IMPORT')
     const file = el('input') as HTMLInputElement
     file.type = 'file'
-    file.accept = '.json'
+    file.accept = '.json,application/json'
     file.style.display = 'none'
     file.addEventListener('change', async () => {
       const f = file.files?.[0]
       if (!f) return
       try {
-        const preset = JSON.parse(await f.text()) as PresetData
+        const preset = await readPresetFile(f)
         this.engine.loadPreset(preset)
         const list = loadUserPresets().filter(p => p.name !== preset.name)
         list.push(preset)
-        saveUserPresets(list)
-        this.refresh(`user:${preset.name}`)
+        if (saveUserPresets(list)) this.refresh(`user:${preset.name}`)
       } catch (err) {
-        alert(`Could not load preset: ${err}`)
+        alert(`Could not load preset: ${err instanceof Error ? err.message : err}`)
       }
       file.value = ''
     })

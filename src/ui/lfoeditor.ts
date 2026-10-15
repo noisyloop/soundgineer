@@ -6,7 +6,7 @@
 //  - Ctrl while dragging: snap to a 16x8 grid
 
 import type { SynthEngine } from '../audio/engine'
-import { evalLfoShape, type LfoPoint } from '../shared/messages'
+import { evalLfoShape, MAX_LFO_POINTS, type LfoPoint } from '../shared/messages'
 import { el } from './common'
 
 const HIT = 10
@@ -111,6 +111,7 @@ export class LfoEditor {
       return
     }
     // add a point
+    if (this.points.length >= MAX_LFO_POINTS) return
     const pts = this.points.slice()
     const x = Math.max(0.001, Math.min(0.999, px / this.w))
     const y = Math.max(0, Math.min(1, 1 - py / this.h))
